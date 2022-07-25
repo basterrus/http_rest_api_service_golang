@@ -20,6 +20,11 @@ type TodoList interface {
 }
 
 type TodoItem interface {
+	Create(userId, listId int, item http_rest_api_service_golang.TodoItem) (int, error)
+	GetAll(userId, listId int) ([]http_rest_api_service_golang.TodoItem, error)
+	Update(userId, itemId int, input http_rest_api_service_golang.UpdateItemInput) error
+	GetById(userId, itemId int) (http_rest_api_service_golang.TodoItem, error)
+	Delete(userId, itemId int) error
 }
 
 type Service struct {
@@ -32,6 +37,6 @@ func NewService(repos *repository.Repository) *Service {
 	return &Service{
 		Authorization: NewAuthService(repos.Authorization),
 		TodoList:      NewTodoListService(repos.TodoList),
-		TodoItem:      nil,
+		TodoItem:      NewTodoItemService(repos.TodoItem, repos.TodoList),
 	}
 }

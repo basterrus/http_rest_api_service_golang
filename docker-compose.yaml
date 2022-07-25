@@ -1,11 +1,22 @@
-version: "3.9"
+version: "3.8"
 
 services:
   database:
     image: postgres:latest
     privileged: true
+    restart: always
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=qwerty
-      - POSTGRES_DB=todo-db
+      - POSTGRES_PASSWORD=Qwer1111
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+
+  todo-app:
+    build: ./
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    environment:
+      - DB_PASSWORD=Qwer1111

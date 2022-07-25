@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/basterrus/http_rest_api_service_golang"
 	"github.com/basterrus/http_rest_api_service_golang/pkg/handler"
 	"github.com/basterrus/http_rest_api_service_golang/pkg/repository"
@@ -11,7 +12,20 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
+
+//@title ToDo Application API
+//@version 1.0
+//description REST API service for ToDo Application
+
+// @host      127.0.0.1:8000
+// @BasePath  /
+
+//@securityDefinitions.apikey ApiKeyAuth
+//@in header
+//@name Authorization
 
 func main() {
 
@@ -45,9 +59,27 @@ func main() {
 	handlers := handler.NewHandler(services)
 
 	srv := new(http_rest_api_service_golang.Server)
-	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		log.Fatalf("Error server run %s", err.Error())
+	go func() {
+		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
+			log.Fatalf("Error server run %s", err.Error())
+		}
+	}()
+	logrus.Printf("ToDo application server started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	logrus.Printf("ToDo application server stoped")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		logrus.Errorf("error occured on server shutting down: %s", err.Error())
 	}
+
+	if err := db.Close(); err != nil {
+		logrus.Errorf("error occured on db connection close: %s", err.Error())
+	}
+
 }
 
 func initConfig() error {
